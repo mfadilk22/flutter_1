@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_1/LoginScreen.dart';
 
@@ -177,23 +178,22 @@ class _RegistrationFormState extends State<RegistrationForm> {
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700),
                             ),
-
-                            // GestureDetector(
-                            //   onTap: () {
-                            //     Navigator.push(
-                            //         context,
-                            //         MaterialPageRoute(
-                            //             builder: (builder) =>
-                            //                 RegistrationScreen()));
-                            //   },
-                            //   child: Text(
-                            //     "Sign Up",
-                            //     style: TextStyle(
-                            //         color: Colors.redAccent,
-                            //         fontWeight: FontWeight.w600,
-                            //         fontSize: 15),
-                            //   ),
-                            // )
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (builder) =>
+                                            RegistrationForm()));
+                              },
+                              child: Text(
+                                "Sign Up",
+                                style: TextStyle(
+                                    color: Colors.redAccent,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15),
+                              ),
+                            )
                           ],
                         ),
                         SizedBox(height: 16),
