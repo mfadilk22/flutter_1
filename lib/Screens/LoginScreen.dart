@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_1/RegistrationForm.dart';
+import 'package:flutter_1/Screens/RegistrationForm.dart';
+import 'package:flutter_1/Screens/HomeScreen.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -16,6 +19,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  final _auth = FirebaseAuth.instance;
+
   //firebase
   //final _auth = FirebaseAuth.instance;
   @override
@@ -27,6 +32,19 @@ class _LoginScreenState extends State<LoginScreen> {
       cursorColor: Colors.black45,
       controller: emailController,
       keyboardType: TextInputType.emailAddress,
+      validator: (value) {
+        if (value!.isEmpty) {
+          return ("Masukkan Email anda");
+        }
+        // reg expression for email validation
+        if (!RegExp("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]").hasMatch(value)) {
+          return ("Please Enter a Valid Email");
+        }
+        return null;
+      },
+      onSaved: (value) {
+        emailController.text = value!;
+      },
       textInputAction: TextInputAction.next,
       decoration: InputDecoration(
           prefixIcon: Icon(
@@ -46,6 +64,18 @@ class _LoginScreenState extends State<LoginScreen> {
     final passwordField = TextFormField(
       autofocus: false,
       obscureText: true,
+      validator: (value) {
+        RegExp regex = new RegExp(r'^.{6,}$');
+        if (value!.isEmpty) {
+          return ("Masukkan Password Anda");
+        }
+        if (!regex.hasMatch(value)) {
+          return ("Masukkan Password Yang Sesuai (6 Karakter)");
+        }
+      },
+      onSaved: (value) {
+        passwordController.text = value!;
+      },
       enableSuggestions: false,
       autocorrect: false,
       cursorColor: Colors.black45,
@@ -78,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
           //Navigator.push(
           //  context, MaterialPageRoute(builder: (context) => HomeScreen()));
 
-          // signIn(emailController.text, passwordController.text);
+          signIn(emailController.text, passwordController.text);
         },
 
         //color: Colors.redAccent,
@@ -188,5 +218,21 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ));
+  }
+
+  //login function
+  void signIn(String email, String password) async {
+    if (_formKey.currentState!.validate()) {
+      await _auth
+          .signInWithEmailAndPassword(email: email, password: password)
+          .then((uid) => {
+                Fluttertoast.showToast(msg: "Selamat Datang Kembali"),
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => HomeScreen())),
+              })
+          .catchError((e) {
+        Fluttertoast.showToast(msg: e!.message);
+      });
+    }
   }
 }

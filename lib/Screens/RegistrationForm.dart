@@ -1,7 +1,11 @@
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_1/LoginScreen.dart';
+import 'package:flutter_1/Models/user_model.dart';
+import 'package:flutter_1/Screens/LoginScreen.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_1/Screens/HomeScreen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegistrationForm extends StatefulWidget {
   const RegistrationForm({Key? key}) : super(key: key);
@@ -12,6 +16,8 @@ class RegistrationForm extends StatefulWidget {
 
 class _RegistrationFormState extends State<RegistrationForm> {
   final _formKey = GlobalKey<FormState>();
+
+  final _auth = FirebaseAuth.instance;
   //editing controller
   final TextEditingController namaController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -25,9 +31,22 @@ class _RegistrationFormState extends State<RegistrationForm> {
       autofocus: false,
       enableSuggestions: true,
       cursorColor: Colors.black45,
-      controller: emailController,
+      controller: namaController,
       keyboardType: TextInputType.emailAddress,
       textInputAction: TextInputAction.next,
+      validator: (value) {
+        RegExp regex = new RegExp(r'^.{3,}$');
+        if (value!.isEmpty) {
+          return ("Full Name is Required for Sign Up");
+        }
+        if (!regex.hasMatch(value)) {
+          return ("Please Enter Valid Name (Min. 3 Characters)");
+        }
+        return null;
+      },
+      onSaved: (value) {
+        namaController.text = value!;
+      },
       decoration: InputDecoration(
           prefixIcon: Icon(
             Icons.supervised_user_circle_sharp,
@@ -49,6 +68,19 @@ class _RegistrationFormState extends State<RegistrationForm> {
       cursorColor: Colors.black45,
       controller: emailController,
       keyboardType: TextInputType.emailAddress,
+      validator: (value) {
+        if (value!.isEmpty) {
+          return ("Please Enter Your Email");
+        }
+        // reg expression for email validation
+        if (!RegExp("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]").hasMatch(value)) {
+          return ("Please Enter a Valid Email");
+        }
+        return null;
+      },
+      onSaved: (value) {
+        emailController.text = value!;
+      },
       textInputAction: TextInputAction.next,
       decoration: InputDecoration(
           prefixIcon: Icon(
@@ -69,8 +101,22 @@ class _RegistrationFormState extends State<RegistrationForm> {
       autofocus: false,
       enableSuggestions: true,
       cursorColor: Colors.black45,
-      controller: emailController,
-      keyboardType: TextInputType.emailAddress,
+      controller: noHPController,
+      keyboardType: TextInputType.number,
+      validator: (value) {
+        String pattern = r'(^[0-9]*$)';
+        RegExp regex = new RegExp(pattern);
+        if (value!.isEmpty) {
+          return ("Hanphone Number is Required for Sign Up");
+        }
+        if (!regex.hasMatch(value)) {
+          return ("Please Enter Valid Phone Number");
+        }
+        return null;
+      },
+      onSaved: (value) {
+        noHPController.text = value!;
+      },
       textInputAction: TextInputAction.next,
       decoration: InputDecoration(
           prefixIcon: Icon(
@@ -94,6 +140,18 @@ class _RegistrationFormState extends State<RegistrationForm> {
       autocorrect: false,
       cursorColor: Colors.black45,
       controller: passwordController,
+      validator: (value) {
+        RegExp regex = new RegExp(r'^.{6,}$');
+        if (value!.isEmpty) {
+          return ("Password is Required for Sign Up");
+        }
+        if (!regex.hasMatch(value)) {
+          return ("Please Enter Valid Password (Min. 6 Characters)");
+        }
+      },
+      onSaved: (value) {
+        passwordController.text = value!;
+      },
       //keyboardType: TextInputType.emailAddress,
       textInputAction: TextInputAction.done,
       decoration: InputDecoration(
@@ -122,7 +180,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
           //Navigator.push(
           //  context, MaterialPageRoute(builder: (context) => HomeScreen()));
 
-          // signIn(emailController.text, passwordController.text);
+          signUp(emailController.text, passwordController.text);
         },
 
         //color: Colors.redAccent,
@@ -178,22 +236,22 @@ class _RegistrationFormState extends State<RegistrationForm> {
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700),
                             ),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (builder) =>
-                                            RegistrationForm()));
-                              },
-                              child: Text(
-                                "Sign Up",
-                                style: TextStyle(
-                                    color: Colors.redAccent,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 15),
-                              ),
-                            )
+                            // GestureDetector(
+                            //   onTap: () {
+                            //     Navigator.push(
+                            //         context,
+                            //         MaterialPageRoute(
+                            //             builder: (builder) =>
+                            //                 RegistrationForm()));
+                            //   },
+                            // child: Text(
+                            //   "Sign Up",
+                            //   style: TextStyle(
+                            //       color: Colors.redAccent,
+                            //       fontWeight: FontWeight.w600,
+                            //       fontSize: 15),
+                            // ),
+                            // )
                           ],
                         ),
                         SizedBox(height: 16),
@@ -236,5 +294,44 @@ class _RegistrationFormState extends State<RegistrationForm> {
         ));
 
     // return Container();
+  }
+
+  void signUp(String email, String password) async {
+    if (_formKey.currentState!.validate()) {
+      await _auth
+          .createUserWithEmailAndPassword(email: email, password: password)
+          .then((value) => {postDetailsToFirestore()})
+          .catchError((e) {
+        Fluttertoast.showToast(msg: e!.message);
+      });
+    }
+  }
+
+  postDetailsToFirestore() async {
+    //calling our firestore
+    //calling our user model
+    //sending these values
+
+    FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
+    User? user = _auth.currentUser;
+
+    UserModel userModel = UserModel();
+
+    //writing all the values
+    userModel.email = user!.email;
+    userModel.uid = user.uid;
+    userModel.fullName = namaController.text;
+    userModel.handphone = noHPController.text;
+
+    await firebaseFirestore
+        .collection("users")
+        .doc(user.uid)
+        .set(userModel.toMap());
+    Fluttertoast.showToast(msg: "Your Account Created Successfully");
+
+    Navigator.pushAndRemoveUntil(
+        (context),
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+        (route) => false);
   }
 }
