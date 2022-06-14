@@ -1,25 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_1/Models/todo.dart';
+import 'package:flutter_1/provider/todos.dart';
+import 'package:flutter_1/Screens/edit_todo_page.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_1/utils.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 class TodoWidget extends StatelessWidget {
   final Todo todo;
 
   const TodoWidget({
-    @required this.todo,
-    Key key,
+    required this.todo,
+    Key? key,
   }) : super(key: key);
 
   @override
-   Widget build(BuildContext context) => ClipRRect(
-     borderRadius: BorderRadius.circular(16),
-     child: Slidable(
+  Widget build(BuildContext context) => ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Slidable(
           actionPane: SlidableDrawerActionPane(),
           key: Key(todo.id),
           actions: [
             IconSlideAction(
               color: Colors.green,
-              onTap: () {},
+              onTap: () => editTodo(context, todo),
               caption: 'Edit',
               icon: Icons.edit,
             )
@@ -27,52 +31,75 @@ class TodoWidget extends StatelessWidget {
           secondaryActions: [
             IconSlideAction(
               color: Colors.red,
-              caption: 'Delete',
-              onTap: () {},
+              caption: 'Hapus',
+              onTap: () => deleteTodo(context, todo),
               icon: Icons.delete,
             )
           ],
           child: buildTodo(context),
         ),
-   )
+      );
 
-  Widget build(BuildContext context) => Container(
-        color: Colors.white,
-        padding: EdgeInsets.all(20),
-        child: Row(
-          children: [
-          Checkbox(
-            activeColor: Theme.of(context).primaryColor,
-            checkColor: Colors.white,
-            value: todo.isDone,
-            onChanged: ,
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  todo.title,
-                  style: TextStyle(
+  Widget buildTodo(BuildContext context) => GestureDetector(
+        onTap: () => editTodo(context, todo),
+        child: Container(
+          color: Colors.white,
+          padding: EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Checkbox(
+                activeColor: Theme.of(context).primaryColor,
+                checkColor: Colors.white,
+                value: todo.isDone,
+                onChanged: (_) {
+                  final provider =
+                      Provider.of<TodosProvider>(context, listen: false);
+                  final isDone = provider.toggleTodoStatus(todo);
+
+                  Utils.showSnackBar(
+                    context,
+                    isDone ? 'Telah selesai' : 'Belum selesai',
+                  );
+                },
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      todo.title,
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).primaryColor,
                         fontSize: 22,
-                  ),
-                ),
-                if (todo.description.isNotEmpty)
-                  Container(
-                    margin: EdgeInsets.only(top: 4),
-                    child: Text(
-                      todo.description,
-                      style: TextStyle(fontSize: 20, height: 1.5),
+                      ),
                     ),
-                  )
-              ],
-            ),
+                    if (todo.description.isNotEmpty)
+                      Container(
+                        margin: EdgeInsets.only(top: 4),
+                        child: Text(
+                          todo.description,
+                          style: TextStyle(fontSize: 20, height: 1.5),
+                        ),
+                      )
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-        )
-        
+        ),
+      );
+  void deleteTodo(BuildContext context, Todo todo) {
+    final provider = Provider.of<TodosProvider>(context, listen: false);
+    provider.removeTodo(todo);
+
+    Utils.showSnackBar(context, 'Sudah terhapus');
+  }
+
+  void editTodo(BuildContext context, Todo todo) => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => EditTodoPage(todo: todo),
+        ),
       );
 }

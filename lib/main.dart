@@ -6,6 +6,7 @@ import 'package:flutter_1/provider/todos.dart';
 import 'package:flutter_1/Screens/HomeScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_1/provider/todos.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,16 +20,16 @@ class MyApp extends StatelessWidget {
 
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
-    create: (context) => TodosProvider(),
+  Widget build(BuildContext context) => ChangeNotifierProvider(
+        create: (context) => TodosProvider(),
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           title: title,
           theme: ThemeData(
-            primarySwatch: Color.fromARGB(255, 87, 44, 148),
+            primarySwatch: Colors.purple,
             scaffoldBackgroundColor: Color(0xFFf6f5ee),
           ),
-          home: HomePage(),
+          home: LoginScreen(),
         ),
-  }
+      );
 }

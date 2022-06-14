@@ -8,7 +8,7 @@ class TodoFormWidget extends StatelessWidget {
   final VoidCallback onSavedTodo;
 
   const TodoFormWidget({
-    required Key key,
+    Key? key,
     this.title = '',
     this.description = '',
     required this.onChangedTitle,
@@ -38,7 +38,7 @@ class TodoFormWidget extends StatelessWidget {
         initialValue: title,
         onChanged: onChangedTitle,
         validator: (title) {
-          if (title.isEmpty) {
+          if (title!.isEmpty) {
             return 'Judul tidak boleh kosong';
           }
           return null;
@@ -63,7 +63,7 @@ class TodoFormWidget extends StatelessWidget {
         width: double.infinity,
         child: ElevatedButton(
           style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(Colors.black),
+            backgroundColor: MaterialStateProperty.all(Colors.black87),
           ),
           onPressed: onSavedTodo,
           child: Text('Simpan'),

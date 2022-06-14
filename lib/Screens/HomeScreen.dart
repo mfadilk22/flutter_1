@@ -7,6 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_1/widget/add_todo_dialog_widget.dart';
+import 'package:flutter_1/widget/todo_list_widget.dart';
+import 'package:flutter_1/widget/completed_list_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -24,11 +26,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final tabs = [
       TodoListWidget(),
-      Container(),
+      CompletedListWidget(),
     ];
     return Scaffold(
       appBar: AppBar(
-        title: Text("Todo List Advdpp"),
+        title: Text("Todo List"),
         centerTitle: true,
       ),
       bottomNavigationBar: BottomNavigationBar(

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_1/Models/todo.dart';
 import 'package:flutter_1/widget/todo_form_widget.dart';
+import 'package:flutter_1/provider/todos.dart';
+import 'package:provider/provider.dart';
 
 class AddTodoDialogWidget extends StatefulWidget {
   @override
@@ -13,27 +16,50 @@ class _AddTodoDialogWidgetState extends State<AddTodoDialogWidget> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Tambah",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 22,
+        content: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Tambah kegiatan',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            TodoFormWidget(
-              onChangedTitle: (title) => setState(() => this.title = title),
-              onChangedDescription: (description) =>
-                  setState(() => this.description = description),
-              onSavedTodo: () {},
-            ),
-          ],
+              const SizedBox(height: 8),
+              TodoFormWidget(
+                onChangedTitle: (title) => setState(() => this.title = title),
+                onChangedDescription: (description) =>
+                    setState(() => this.description = description),
+                onSavedTodo: addTodo,
+              ),
+            ],
+          ),
         ),
       );
+
+  void addTodo() {
+    final isValid = _formKey.currentState!.validate();
+
+    if (!isValid) {
+      return;
+    } else {
+      final todo = Todo(
+        id: DateTime.now().toString(),
+        title: title,
+        description: description,
+        createdTime: DateTime.now(),
+      );
+
+      final provider = Provider.of<TodosProvider>(context, listen: false);
+      provider.addTodo(todo);
+
+      Navigator.of(context).pop();
+    }
+  }
 
 //   void addTodo() {
 //     final isValid = _formKey.currentState.validate();
